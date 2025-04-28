@@ -43,19 +43,26 @@ if arquivo is not None:
         entrada['lat'] = None
         entrada['long'] = None
 
+        # Para relatório
+        encontrados = 0
+        nao_encontrados = 0
+
         # Loop para busca aproximada
         for idx, row in entrada.iterrows():
-            rodovia = row['Rodovia']
+            rodovia = str(row['Rodovia']).strip()
             km = row['KM']
 
-            candidatos = bd_geo[(bd_geo['Rodovia'] == rodovia) & (bd_geo['KM'].between(km - 0.5, km + 0.5))]
+            candidatos = bd_geo[(bd_geo['Rodovia'].str.strip() == rodovia) & (bd_geo['KM'].between(km - 0.5, km + 0.5))]
             if not candidatos.empty:
                 melhor = candidatos.iloc[(candidatos['KM'] - km).abs().argsort()].iloc[0]
                 entrada.at[idx, 'lat'] = melhor['lat']
                 entrada.at[idx, 'long'] = melhor['long']
+                encontrados += 1
+            else:
+                nao_encontrados += 1
 
         # Mostrar o resultado
-        st.success("Arquivo processado com sucesso!")
+        st.success(f"Arquivo processado! {encontrados} correspondências encontradas e {nao_encontrados} não encontradas.")
         st.write("### Resultado:", entrada)
 
         # Download do resultado
