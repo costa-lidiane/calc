@@ -5,7 +5,7 @@ import streamlit as st
 # Carregar base de dados BD_GEO (base oficial para consulta)
 @st.cache_data
 def carregar_base():
-    bd_geo = pd.read_excel('NOVA_BASE_DE_GEOLOCALIZACAO.xlsx')
+    bd_geo = pd.read_excel('BASE_NEW.xlsx')
 
     # Tentar reconhecer e renomear colunas, se necessário
     if set(['SP', 'km', 'Latitude', 'Longitude']).issubset(bd_geo.columns):
@@ -35,19 +35,14 @@ arquivo = st.file_uploader("Envie o arquivo .xlsx com as colunas 'Rodovia' e 'KM
 if arquivo is not None:
     entrada = pd.read_excel(arquivo)
 
-    # Checar se colunas necessárias estão presentes
     if {'Rodovia', 'KM'}.issubset(entrada.columns):
         entrada['KM'] = entrada['KM'].astype(float)
-
-        # Inicializar colunas de resultado
         entrada['lat'] = None
         entrada['long'] = None
 
-        # Para relatório
         encontrados = 0
         nao_encontrados = 0
 
-        # Loop para busca aproximada
         for idx, row in entrada.iterrows():
             rodovia = str(row['Rodovia']).strip()
             km = row['KM']
@@ -61,11 +56,9 @@ if arquivo is not None:
             else:
                 nao_encontrados += 1
 
-        # Mostrar o resultado
         st.success(f"Arquivo processado! {encontrados} correspondências encontradas e {nao_encontrados} não encontradas.")
         st.write("### Resultado:", entrada)
 
-        # Download do resultado
         def converter_para_excel(df):
             from io import BytesIO
             output = BytesIO()
@@ -80,7 +73,6 @@ if arquivo is not None:
             file_name='resultado_latlong.xlsx',
             mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         )
-
     else:
         st.error("O arquivo precisa ter as colunas 'Rodovia' e 'KM'.")
 else:
